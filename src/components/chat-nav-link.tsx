@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { MessageCircle } from "lucide-react";
@@ -16,14 +16,14 @@ export function ChatNavLink({ userId, initial }: { userId: string; initial: numb
   const [count, setCount] = useState(initial);
   const supabase = useMemo(() => createClient(), []);
 
-  async function refresh() {
+  const refresh = useCallback(async () => {
     const { count: next } = await supabase
       .from("messages")
       .select("id", { count: "exact", head: true })
       .neq("sender_id", userId)
       .is("read_at", null);
     setCount(next || 0);
-  }
+  }, [supabase, userId]);
 
   useEffect(() => {
     setCount(initial);
@@ -31,7 +31,7 @@ export function ChatNavLink({ userId, initial }: { userId: string; initial: numb
 
   useEffect(() => {
     void refresh();
-  }, [pathname, userId]);
+  }, [pathname, refresh]);
 
   useEffect(() => {
     const channel = supabase
@@ -49,7 +49,7 @@ export function ChatNavLink({ userId, initial }: { userId: string; initial: numb
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [supabase, userId]);
+  }, [refresh, supabase, userId]);
 
   return (
     <Link href="/chat" className="relative rounded-xl p-2 hover:bg-paper" aria-label="Tin nhắn">
