@@ -1,36 +1,70 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Vshare
 
-## Getting Started
+Nền tảng cộng đồng trao đổi thời gian và kỹ năng bằng **Time Credit**.
 
-First, run the development server:
+> 1 giờ hỗ trợ = 1 Time Credit. Time Credit là điểm nội bộ, không phải tiền, không nạp/rút.
+
+Thông điệp: **Ai cũng có thể cho đi và ai cũng có thể nhận lại.**
+
+## Công nghệ
+
+- Next.js 15 (App Router) + TypeScript + Tailwind CSS
+- Supabase Auth, PostgreSQL, RLS, Storage, Realtime
+
+## Cài đặt
+
+```bash
+cd vshare
+copy .env.example .env.local
+npm install
+```
+
+Điền `.env.local`:
+
+```
+NEXT_PUBLIC_SUPABASE_URL=https://xxxx.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=...
+NEXT_PUBLIC_SITE_URL=http://localhost:3000
+```
+
+Trong [Supabase](https://supabase.com):
+
+1. Mở SQL Editor, chạy toàn bộ file `supabase/schema.sql`.
+2. Authentication → Providers: bật Email. Tắt “Confirm email” nếu muốn đăng nhập ngay lúc demo.
+3. (Tuỳ chọn) bật Google OAuth và thêm Redirect URL: `http://localhost:3000/auth/callback`.
+4. Authentication → URL Configuration: Site URL = `http://localhost:3000`.
+5. Đặt admin cho tài khoản đầu tiên:
+
+```sql
+update public.profiles set role = 'admin' where email = 'ban@email.com';
+```
+
+Chạy app:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Mở http://localhost:3000
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Luồng chính
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+1. Đăng ký / đăng nhập (nhận 2 Time Credit chào mừng).
+2. Cập nhật hồ sơ, đăng kỹ năng.
+3. Người khác đăng yêu cầu → bạn **Nhận hỗ trợ**.
+4. Chat thống nhất công việc.
+5. Cả hai **Xác nhận hoàn thành** → hệ thống cộng/trừ Time Credit một lần, chống số dư âm.
+6. Đánh giá đối phương.
+7. Dùng Time Credit cho yêu cầu khác.
 
-## Learn More
+Cộng/trừ điểm chỉ chạy trong hàm PostgreSQL `confirm_transaction` (không cho sửa số dư từ frontend).
 
-To learn more about Next.js, take a look at the following resources:
+## Tài khoản demo
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Tạo 2 user trên trang đăng ký. User A đăng yêu cầu 1 giờ. User B nhận hỗ trợ. Cả hai xác nhận. B nhận +1 TC, A bị trừ 1 TC.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Phạm vi MVP
 
-## Deploy on Vercel
+Có: auth, Google login, profile, kỹ năng, yêu cầu, tìm/lọc, kết nối, chat realtime, thông báo, ví Time Credit, xác nhận giao dịch, review, admin, báo cáo, RLS.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Chưa làm (đúng spec): thanh toán tiền thật, QR, tặng đồ đổi điểm, app mobile.

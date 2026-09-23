@@ -1,26 +1,81 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --ink: #0b1f33;
+  --muted: #5b6b7c;
+  --paper: #f4f7fb;
+  --paper-2: #e8eef6;
+  --card: #ffffff;
+  --line: #d7e2ee;
+  --terracotta: #0f8f8a;
+  --terracotta-dark: #0b6f6b;
+  --sage: #1565c0;
+  --sage-2: #0d4ea0;
+  --gold: #f59e0b;
+  --danger: #dc2626;
+  --navy: #071525;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-ink: var(--ink);
+  --color-muted: var(--muted);
+  --color-paper: var(--paper);
+  --color-paper-2: var(--paper-2);
+  --color-card: var(--card);
+  --color-line: var(--line);
+  --color-terracotta: var(--terracotta);
+  --color-terracotta-dark: var(--terracotta-dark);
+  --color-sage: var(--sage);
+  --color-sage-2: var(--sage-2);
+  --color-gold: var(--gold);
+  --color-danger: var(--danger);
+  --color-navy: var(--navy);
+  --font-sans: var(--font-jakarta);
+  --font-display: var(--font-jakarta);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+* { box-sizing: border-box; }
+
+html, body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-jakarta), ui-sans-serif, system-ui, sans-serif;
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+h1, h2, h3, .font-display {
+  font-family: var(--font-jakarta), ui-sans-serif, system-ui, sans-serif;
+  letter-spacing: -0.03em;
+  font-weight: 700;
+}
+
+::selection {
+  background: #b8ecea;
+}
+
+a { text-decoration: none; }
+input, textarea, select { font: inherit; }
+
+.grain {
+  background:
+    radial-gradient(900px 420px at 8% -10%, rgba(15, 143, 138, 0.14), transparent 55%),
+    radial-gradient(700px 380px at 100% 0%, rgba(21, 101, 192, 0.1), transparent 46%),
+    linear-gradient(#f4f7fb, #f4f7fb);
+}
+
+.grid-bg {
+  background-image:
+    linear-gradient(rgba(11, 31, 51, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(11, 31, 51, 0.04) 1px, transparent 1px);
+  background-size: 28px 28px;
+}
+
+.kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--terracotta);
 }
