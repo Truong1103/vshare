@@ -160,6 +160,8 @@ export async function helperAccept(txId: string) {
   const { error } = await ctx.supabase.rpc("helper_accept_transaction", { p_tx: txId });
   if (error) return { error: mapError(error.message) };
   revalidatePath(`/giao-dich/${txId}`);
+  revalidatePath("/tang-qua");
+  revalidatePath("/giao-dich");
   return { ok: true };
 }
 
@@ -350,4 +352,132 @@ export async function adminSetRedemption(id: string, status: string, note: strin
   if (error) return { error: mapError(error.message) };
   revalidatePath("/admin/doi-qua");
   return { ok: true };
+}
+
+const IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
+const VIDEO_TYPES = ["video/mp4", "video/webm", "video/quicktime"];
+
+function asFiles(formData: FormData, name: string) {
+  return formData.getAll(name).filter((f): f is File => f instanceof File && f.size > 0);
+}
+
+async function attachGiftMedia(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  userId: string,
+  giftId: string,
+  formData: FormData,
+  keepImages: string[],
+  keepVideo: string | null
+) {
+  const imageUrls = [...keepImages].slice(0, 4);
+  for (const file of asFiles(formData, "images")) {
+    if (imageUrls.length >= 4) break;
+    if (!IMAGE_TYPES.includes(file.type)) return { error: "Ảnh phải là JPG, PNG, WEBP hoặc GIF." };
+    if (file.size > 5 * 1024 * 1024) return { error: "Mỗi ảnh tối đa 5MB." };
+    const ext = (file.name.split(".").pop() || "jpg").toLowerCase().replace(/[^a-z0-9]/g, "") || "jpg";
+    const path = `${userId}/${giftId}/${Date.now()}-${imageUrls.length}.${ext}`;
+    const { error } = await supabase.storage.from("gifts").upload(path, file, { upsert: true, contentType: file.type });
+    if (error) return { error: "Không tải được ảnh. Kiểm tra bucket gifts trên Supabase." };
+    imageUrls.push(supabase.storage.from("gifts").getPublicUrl(path).data.publicUrl);
+  }
+
+  let videoUrl = keepVideo;
+  const video = asFiles(formData, "video")[0];
+  if (video) {
+    if (!VIDEO_TYPES.includes(video.type)) return { error: "Video phải là MP4, WEBM hoặc MOV." };
+    if (video.size > 25 * 1024 * 1024) return { error: "Video tối đa 25MB." };
+    const ext = video.type === "video/webm" ? "webm" : video.type === "video/quicktime" ? "mov" : "mp4";
+    const path = `${userId}/${giftId}/clip-${Date.now()}.${ext}`;
+    const { error } = await supabase.storage.from("gifts").upload(path, video, { upsert: true, contentType: video.type });
+    if (error) return { error: "Không tải được video. Kiểm tra bucket gifts trên Supabase." };
+    videoUrl = supabase.storage.from("gifts").getPublicUrl(path).data.publicUrl;
+  }
+
+  const { error } = await supabase.from("gift_posts").update({ image_urls: imageUrls, video_url: videoUrl }).eq("id", giftId);
+  if (error) return { error: mapError(error.message) };
+  return { error: null as string | null };
+}
+
+export async function createGift(formData: FormData) {
+  const ctx = await requireUser();
+  if (ctx.error) return { error: ctx.error };
+  const title = String(formData.get("title") || "").trim();
+  const description = String(formData.get("description") || "").trim();
+  const credit = Number(formData.get("time_credit") || 0);
+  if (!title || !description) return { error: "Tên món đồ và mô tả là bắt buộc." };
+  if (!credit || credit <= 0) return { error: "Nhập số Time Credit muốn nhận (lớn hơn 0)." };
+  const { error, data } = await ctx.supabase
+    .from("gift_posts")
+    .insert({
+      user_id: ctx.user!.id,
+      title,
+      description,
+      extra_info: String(formData.get("extra_info") || "").trim() || null,
+      category_id: String(formData.get("category_id") || "") || null,
+      area: String(formData.get("area") || "") || null,
+      time_credit: hoursToCredit(credit),
+      status: "open",
+    })
+    .select("id")
+    .single();
+  if (error) return { error: mapError(error.message) };
+  const media = await attachGiftMedia(ctx.supabase, ctx.user!.id, data.id, formData, [], null);
+  if (media.error) return { error: media.error };
+  revalidatePath("/tang-qua");
+  redirect(`/tang-qua/${data.id}`);
+}
+
+export async function updateGift(id: string, formData: FormData) {
+  const ctx = await requireUser();
+  if (ctx.error) return { error: ctx.error };
+  const credit = Number(formData.get("time_credit") || 0);
+  if (!credit || credit <= 0) return { error: "Nhập số Time Credit muốn nhận (lớn hơn 0)." };
+  const keepImages = formData.getAll("keep_image").map(String).filter(Boolean);
+  const keepVideo = formData.get("remove_video") ? null : String(formData.get("keep_video") || "") || null;
+  const { error } = await ctx.supabase
+    .from("gift_posts")
+    .update({
+      title: String(formData.get("title") || "").trim(),
+      description: String(formData.get("description") || "").trim(),
+      extra_info: String(formData.get("extra_info") || "").trim() || null,
+      category_id: String(formData.get("category_id") || "") || null,
+      area: String(formData.get("area") || "") || null,
+      time_credit: hoursToCredit(credit),
+      status: String(formData.get("status") || "open"),
+    })
+    .eq("id", id)
+    .eq("user_id", ctx.user!.id);
+  if (error) return { error: mapError(error.message) };
+  const media = await attachGiftMedia(ctx.supabase, ctx.user!.id, id, formData, keepImages, keepVideo);
+  if (media.error) return { error: media.error };
+  revalidatePath(`/tang-qua/${id}`);
+  return { ok: true };
+}
+
+export async function deleteGift(id: string) {
+  const ctx = await requireUser();
+  if (ctx.error) return { error: ctx.error };
+  const { error } = await ctx.supabase.from("gift_posts").update({ status: "deleted" }).eq("id", id).eq("user_id", ctx.user!.id);
+  if (error) return { error: mapError(error.message) };
+  revalidatePath("/tang-qua");
+  redirect("/tang-qua/cua-toi");
+}
+
+export async function closeGift(id: string) {
+  const ctx = await requireUser();
+  if (ctx.error) return { error: ctx.error };
+  const { error } = await ctx.supabase.rpc("close_gift", { p_id: id });
+  if (error) return { error: mapError(error.message) };
+  revalidatePath(`/tang-qua/${id}`);
+  return { ok: true };
+}
+
+export async function requestGift(giftId: string, formData?: FormData) {
+  const ctx = await requireUser();
+  if (ctx.error) return { error: ctx.error };
+  const note = String(formData?.get("note") || "");
+  const { data, error } = await ctx.supabase.rpc("request_gift", { p_gift_id: giftId, p_note: note });
+  if (error) return { error: mapError(error.message) };
+  revalidatePath(`/tang-qua/${giftId}`);
+  redirect(`/giao-dich/${data}`);
 }

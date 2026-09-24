@@ -9,13 +9,14 @@ import { cn } from "@/lib/utils";
 import { AreaPicker } from "@/components/area-picker";
 
 type Category = { id: string; name: string };
-type Suggestion = { kind: "category" | "skill" | "request" | "person"; id: string; label: string; href: string };
-type Counts = { all: number; skills: number; requests: number; people: number };
+type Suggestion = { kind: "category" | "skill" | "request" | "person" | "gift"; id: string; label: string; href: string };
+type Counts = { all: number; skills: number; requests: number; people: number; gifts: number };
 
 const KIND_LABEL: Record<Suggestion["kind"], string> = {
   category: "Danh mục",
   skill: "Kỹ năng",
   request: "Yêu cầu",
+  gift: "Tặng quà",
   person: "Người hỗ trợ",
 };
 
@@ -23,6 +24,7 @@ const TABS = [
   { id: "all", label: "Tất cả" },
   { id: "skills", label: "Kỹ năng" },
   { id: "requests", label: "Yêu cầu" },
+  { id: "gifts", label: "Tặng quà" },
   { id: "people", label: "Người hỗ trợ" },
 ] as const;
 

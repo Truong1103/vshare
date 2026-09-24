@@ -28,7 +28,7 @@ export default async function SearchPage({
 }) {
   const sp = await searchParams;
   const q = sanitizeSearch(String(sp.q || ""));
-  const tab = ["all", "skills", "requests", "people"].includes(String(sp.tab || "all")) ? String(sp.tab || "all") : "all";
+  const tab = ["all", "skills", "requests", "gifts", "people"].includes(String(sp.tab || "all")) ? String(sp.tab || "all") : "all";
   const category = String(sp.category || "");
   const area = String(sp.area || "");
   const mode = String(sp.mode || "");
@@ -50,11 +50,35 @@ export default async function SearchPage({
   const preview = tab === "all" ? 8 : 24;
   const wantSkills = tab === "all" || tab === "skills";
   const wantRequests = tab === "all" || tab === "requests";
+  const wantGifts = tab === "all" || tab === "gifts";
   const wantPeople = tab === "all" || tab === "people";
   const filters = { q, category, area, mode };
 
-  const [{ count: skillCount }, { count: requestCount }, { count: peopleCount }, skillRes, requestRes, peopleRes] =
-    await Promise.all([
+  let giftCountQuery = supabase.from("gift_posts").select("id", { count: "exact", head: true }).eq("status", "open");
+  let giftListQuery = supabase
+    .from("gift_posts")
+    .select("id, title, description, area, time_credit, image_urls, gift_categories(name), profiles(full_name, avatar_url)")
+    .eq("status", "open");
+  if (q) {
+    giftCountQuery = giftCountQuery.or(`title.ilike.%${q}%,description.ilike.%${q}%`);
+    giftListQuery = giftListQuery.or(`title.ilike.%${q}%,description.ilike.%${q}%`);
+  }
+  if (area) {
+    const prefix = `${area.replace(/[%_]/g, "")}%`;
+    giftCountQuery = giftCountQuery.ilike("area", prefix);
+    giftListQuery = giftListQuery.ilike("area", prefix);
+  }
+
+  const [
+    { count: skillCount },
+    { count: requestCount },
+    { count: peopleCount },
+    giftCountRes,
+    skillRes,
+    requestRes,
+    peopleRes,
+    giftRes,
+  ] = await Promise.all([
       applyListingFilters(
         supabase.from("skill_posts").select("id", { count: "exact", head: true }).eq("status", "active"),
         q,
@@ -70,6 +94,7 @@ export default async function SearchPage({
         mode
       ),
       peopleCountQuery,
+      giftCountQuery,
       wantSkills
         ? applyListingFilters(
             supabase
@@ -96,22 +121,28 @@ export default async function SearchPage({
             .limit(preview)
         : Promise.resolve({ data: [] }),
       wantPeople ? peopleListQuery.order("rating_avg", { ascending: false }).limit(preview) : Promise.resolve({ data: [] }),
+      wantGifts
+        ? giftListQuery.order("created_at", { ascending: false }).limit(preview)
+        : Promise.resolve({ data: [] }),
     ]);
 
   const skills = skillRes.data || [];
   const requests = requestRes.data || [];
   const people = peopleRes.data || [];
+  const gifts = "error" in giftRes && giftRes.error ? [] : giftRes.data || [];
+  const giftCount = "error" in giftCountRes && giftCountRes.error ? 0 : giftCountRes.count || gifts.length;
   const counts = {
     skills: skillCount || 0,
     requests: requestCount || 0,
     people: peopleCount || 0,
-    all: (skillCount || 0) + (requestCount || 0) + (peopleCount || 0),
+    gifts: giftCount,
+    all: (skillCount || 0) + (requestCount || 0) + (peopleCount || 0) + giftCount,
   };
-  const empty = !skills.length && !requests.length && !people.length;
+  const empty = !skills.length && !requests.length && !people.length && !gifts.length;
 
   return (
     <div>
-      <PageHeader kicker="Khám phá" title="Tìm kỹ năng, yêu cầu và người hỗ trợ" />
+      <PageHeader kicker="Khám phá" title="Tìm kỹ năng, yêu cầu, quà tặng và người hỗ trợ" />
       <SearchExplorer
         key={`${q}-${tab}-${category}-${area}-${mode}`}
         q={q}
@@ -197,6 +228,48 @@ export default async function SearchPage({
                   </p>
                   <div className="mt-4">
                     <LinkButton href={`/yeu-cau/${r.id}`}>Xem yêu cầu</LinkButton>
+                  </div>
+                </Card>
+              );
+            })}
+          </div>
+        </section>
+      ) : null}
+
+      {wantGifts && gifts.length ? (
+        <section className="mb-8">
+          <div className="mb-3 flex items-end justify-between">
+            <h2 className="text-lg font-bold">Tặng quà cộng đồng</h2>
+            {tab === "all" && counts.gifts > gifts.length ? (
+              <Link href={listingHref("gifts", filters)} className="text-sm font-semibold text-terracotta">
+                Xem tất cả {counts.gifts}
+              </Link>
+            ) : null}
+          </div>
+          <div className="grid gap-4 md:grid-cols-2">
+            {gifts.map((g) => {
+              const owner = one(g.profiles);
+              const cat = one(g.gift_categories);
+              const cover = (g.image_urls || [])[0];
+              return (
+                <Card key={g.id} className="overflow-hidden p-0">
+                  {cover ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={cover} alt="" className="h-40 w-full object-cover" />
+                  ) : null}
+                  <div className="p-5">
+                    <div className="flex justify-between">
+                      <Badge>{cat?.name || "Tặng quà"}</Badge>
+                      <Badge tone="sage">{formatCredit(g.time_credit)} TC</Badge>
+                    </div>
+                    <h3 className="mt-2 text-xl font-bold">{g.title}</h3>
+                    <p className="mt-1 line-clamp-2 text-sm text-muted">{g.description}</p>
+                    <p className="mt-3 text-xs text-muted">
+                      {owner?.full_name} · {g.area || "Thỏa thuận"}
+                    </p>
+                    <div className="mt-4">
+                      <LinkButton href={`/tang-qua/${g.id}`}>Xem món đồ</LinkButton>
+                    </div>
                   </div>
                 </Card>
               );

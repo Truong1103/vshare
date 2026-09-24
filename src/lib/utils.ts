@@ -52,6 +52,9 @@ export function mapError(message: string) {
     duplicate_key: "Bạn đã đánh giá giao dịch này rồi.",
     REWARD_OUT_OF_STOCK: "Quà này tạm hết. Hãy chọn phần quà khác.",
     INVALID_CONTACT: "Vui lòng điền đủ họ tên, email và nội dung liên hệ.",
+    GIFT_NOT_OPEN: "Món đồ này không còn nhận yêu cầu.",
+    ALREADY_REQUESTED: "Bạn đã gửi yêu cầu nhận món này rồi.",
+    GIFT_IN_PROGRESS: "Đang có người nhận. Hủy giao dịch trước khi đóng tin.",
   };
   for (const [k, v] of Object.entries(table)) {
     if (key.includes(k) || message.includes(k)) return v;

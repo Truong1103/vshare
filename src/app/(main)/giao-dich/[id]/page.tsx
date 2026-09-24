@@ -26,6 +26,11 @@ export default async function TransactionDetail({ params }: { params: Promise<{ 
   const other = one(iAmHelper ? tx.requester : tx.helper);
   const request = one(tx.help_requests);
   const skill = one(tx.skill_posts);
+  let giftTitle: string | null = null;
+  if (tx.gift_id) {
+    const { data: g } = await supabase.from("gift_posts").select("title").eq("id", tx.gift_id).maybeSingle();
+    giftTitle = g?.title || "Tặng quà";
+  }
 
   const { data: myReview } = await supabase
     .from("reviews")
@@ -38,19 +43,19 @@ export default async function TransactionDetail({ params }: { params: Promise<{ 
     <div>
       <PageHeader
         kicker="Giao dịch"
-        title={request?.title || skill?.title || "Kết nối hỗ trợ"}
+        title={request?.title || skill?.title || giftTitle || "Kết nối hỗ trợ"}
       />
       <div className="grid gap-6 md:grid-cols-[2fr_1fr]">
         <Card>
           <div className="flex flex-wrap gap-2">
             <Badge>{TX_LABEL[tx.status]}</Badge>
             <Badge tone="sage">{formatCredit(tx.amount)} Time Credit</Badge>
-            <Badge tone="muted">{tx.hours} giờ</Badge>
+            {tx.gift_id ? <Badge tone="muted">Tặng quà</Badge> : <Badge tone="muted">{tx.hours} giờ</Badge>}
           </div>
           <p className="mt-4 text-sm text-muted">Tạo lúc {formatDate(tx.created_at)}</p>
           <div className="mt-6 grid gap-3 text-sm">
-            <p>Người cần hỗ trợ: {one(tx.requester)?.full_name}</p>
-            <p>Người hỗ trợ: {one(tx.helper)?.full_name}</p>
+            <p>Người {tx.gift_id ? "nhận quà" : "cần hỗ trợ"}: {one(tx.requester)?.full_name}</p>
+            <p>Người {tx.gift_id ? "tặng" : "hỗ trợ"}: {one(tx.helper)?.full_name}</p>
             <p>Bạn đã xác nhận: {myConfirm ? formatDate(myConfirm) : "Chưa"}</p>
             <p>Đối phương xác nhận: {theirConfirm ? formatDate(theirConfirm) : "Chưa"}</p>
           </div>

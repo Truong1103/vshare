@@ -8,7 +8,7 @@ import { ArrowUpRight, Bell, Sparkles, Star, Wallet } from "lucide-react";
 export default async function DashboardPage() {
   const { user, profile, supabase } = await getSessionUser();
   const uid = user!.id;
-  const [{ data: skills }, { data: requests }, { data: txs }, { data: notifs }] = await Promise.all([
+  const [{ data: skills }, { data: requests }, { data: txs }, { data: notifs }, giftsRes] = await Promise.all([
     supabase.from("skill_posts").select("*").eq("user_id", uid).neq("status", "deleted").order("created_at", { ascending: false }).limit(4),
     supabase.from("help_requests").select("*").eq("user_id", uid).order("created_at", { ascending: false }).limit(4),
     supabase
@@ -18,7 +18,9 @@ export default async function DashboardPage() {
       .order("created_at", { ascending: false })
       .limit(5),
     supabase.from("notifications").select("*").eq("user_id", uid).order("created_at", { ascending: false }).limit(5),
+    supabase.from("gift_posts").select("id, title, status").eq("user_id", uid).neq("status", "deleted").order("created_at", { ascending: false }).limit(4),
   ]);
+  const myGifts = giftsRes.error ? [] : giftsRes.data || [];
 
   return (
     <div>
@@ -38,6 +40,9 @@ export default async function DashboardPage() {
         <LinkButton href="/ky-nang/moi">Đăng kỹ năng</LinkButton>
         <LinkButton href="/yeu-cau/moi" variant="sage">
           Đăng yêu cầu
+        </LinkButton>
+        <LinkButton href="/tang-qua/moi" variant="secondary">
+          Tặng đồ
         </LinkButton>
         <LinkButton href="/tim-kiem" variant="secondary">
           Tìm hỗ trợ
@@ -109,6 +114,23 @@ export default async function DashboardPage() {
               </Link>
             ))}
             {!requests?.length ? <p className="text-sm text-muted">Chưa có yêu cầu.</p> : null}
+          </div>
+        </Card>
+        <Card>
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg font-bold">Tặng quà của bạn</h2>
+            <Link href="/tang-qua/cua-toi" className="text-sm font-semibold text-terracotta">
+              Quản lý
+            </Link>
+          </div>
+          <div className="mt-4 space-y-2">
+            {myGifts.map((g) => (
+              <Link key={g.id} href={`/tang-qua/${g.id}`} className="flex items-center justify-between rounded-xl bg-paper px-3 py-2 text-sm hover:text-terracotta">
+                {g.title}
+                <ArrowUpRight className="h-4 w-4" />
+              </Link>
+            ))}
+            {!myGifts.length ? <p className="text-sm text-muted">Chưa đăng món đồ tặng.</p> : null}
           </div>
         </Card>
       </div>

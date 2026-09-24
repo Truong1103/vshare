@@ -24,7 +24,14 @@ export default async function TransactionsPage() {
                 <div>
                   <p className="font-medium">{other?.full_name}</p>
                   <p className="text-sm text-muted">
-                    {tx.requester_id === user!.id ? "Bạn đang nhận hỗ trợ" : "Bạn đang hỗ trợ"} · {formatCredit(tx.amount)} TC · {formatDate(tx.created_at)}
+                    {tx.gift_id
+                      ? tx.requester_id === user!.id
+                        ? "Bạn nhận quà"
+                        : "Bạn tặng đồ"
+                      : tx.requester_id === user!.id
+                        ? "Bạn đang nhận hỗ trợ"
+                        : "Bạn đang hỗ trợ"}{" "}
+                    · {formatCredit(tx.amount)} TC · {formatDate(tx.created_at)}
                   </p>
                 </div>
                 <Badge>{TX_LABEL[tx.status]}</Badge>

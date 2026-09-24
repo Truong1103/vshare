@@ -55,10 +55,34 @@ export type HelpRequest = {
   categories?: Category | null;
 };
 
+export type GiftCategory = {
+  id: string;
+  slug: string;
+  name: string;
+};
+
+export type GiftPost = {
+  id: string;
+  user_id: string;
+  category_id: string | null;
+  title: string;
+  description: string;
+  extra_info: string | null;
+  area: string | null;
+  time_credit: number;
+  image_urls: string[];
+  video_url: string | null;
+  status: "open" | "claimed" | "completed" | "cancelled" | "hidden" | "deleted";
+  created_at: string;
+  profiles?: Profile;
+  gift_categories?: GiftCategory | null;
+};
+
 export type Transaction = {
   id: string;
   request_id: string | null;
   skill_id: string | null;
+  gift_id?: string | null;
   requester_id: string;
   helper_id: string;
   conversation_id: string | null;
@@ -74,6 +98,7 @@ export type Transaction = {
   helper?: Profile;
   help_requests?: HelpRequest | null;
   skill_posts?: SkillPost | null;
+  gift_posts?: GiftPost | null;
 };
 
 export type Message = {

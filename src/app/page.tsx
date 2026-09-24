@@ -218,8 +218,11 @@ export default async function HomePage() {
                 </div>
               ))}
             </div>
-            <Link href="/doi-qua" className="mt-6 inline-flex rounded-xl bg-terracotta px-5 py-2.5 text-sm font-semibold text-white">
+            <Link href="/doi-qua" className="mt-6 mr-3 inline-flex rounded-xl bg-terracotta px-5 py-2.5 text-sm font-semibold text-white">
               Xem danh mục đổi quà
+            </Link>
+            <Link href="/tang-qua" className="mt-6 inline-flex rounded-xl border border-line bg-white px-5 py-2.5 text-sm font-semibold">
+              Tặng đồ dùng cộng đồng
             </Link>
           </div>
           <CroppedBanner src="/banner2.png" alt="Kết nối những con người tử tế" />

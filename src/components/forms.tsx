@@ -76,7 +76,7 @@ export function ClientForm({
   children,
   success,
 }: {
-  action: (formData: FormData) => Promise<{ error?: string; ok?: boolean }>;
+  action: (formData: FormData) => Promise<{ error?: string; ok?: boolean } | void>;
   children: React.ReactNode;
   success?: string;
 }) {
@@ -89,8 +89,8 @@ export function ClientForm({
         setError(null);
         setOk(null);
         const res = await action(fd);
-        if (res?.error) setError(res.error);
-        else setOk(success || "Đã lưu.");
+        if (res && "error" in res && res.error) setError(res.error);
+        else if (success) setOk(success);
       }}
     >
       <FormAlert error={error} ok={ok} />

@@ -29,6 +29,15 @@ export const LISTING_LABEL: Record<string, string> = {
   deleted: "Đã xóa",
 };
 
+export const GIFT_LABEL: Record<string, string> = {
+  open: "Đang nhận yêu cầu",
+  claimed: "Đã có người nhận",
+  completed: "Hoàn tất",
+  cancelled: "Đã hủy",
+  hidden: "Đã ẩn",
+  deleted: "Đã xóa",
+};
+
 export const REPORT_LABEL: Record<string, string> = {
   open: "Chưa xử lý",
   reviewing: "Đang xem",

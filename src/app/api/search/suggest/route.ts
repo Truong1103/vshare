@@ -10,12 +10,15 @@ export async function GET(request: Request) {
   const supabase = await createClient();
   const like = `%${q}%`;
 
-  const [{ data: skills }, { data: requests }, { data: people }, { data: categories }] = await Promise.all([
+  const [{ data: skills }, { data: requests }, { data: people }, { data: categories }, giftRes] = await Promise.all([
     supabase.from("skill_posts").select("id, title").eq("status", "active").ilike("title", like).limit(4),
     supabase.from("help_requests").select("id, title").eq("status", "open").ilike("title", like).limit(4),
     supabase.from("profiles").select("id, full_name").eq("is_banned", false).ilike("full_name", like).limit(3),
     supabase.from("categories").select("id, name").ilike("name", like).limit(3),
+    supabase.from("gift_posts").select("id, title").eq("status", "open").ilike("title", like).limit(3),
   ]);
+
+  const gifts = giftRes.error ? [] : giftRes.data || [];
 
   const items = [
     ...(categories || []).map((c) => ({
@@ -35,6 +38,12 @@ export async function GET(request: Request) {
       id: r.id,
       label: r.title,
       href: `/yeu-cau/${r.id}`,
+    })),
+    ...gifts.map((g) => ({
+      kind: "gift" as const,
+      id: g.id,
+      label: g.title,
+      href: `/tang-qua/${g.id}`,
     })),
     ...(people || []).map((p) => ({
       kind: "person" as const,

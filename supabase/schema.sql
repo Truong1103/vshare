@@ -831,3 +831,4 @@ create policy avatars_own_update on storage.objects for update
 using (bucket_id = 'avatars' and auth.uid()::text = (storage.foldername(name))[1]);
 
 -- Đổi quà + liên hệ: chạy thêm supabase/rewards.sql trên dự án đã triển khai.
+-- Tặng quà cộng đồng: chạy thêm supabase/gifts.sql.

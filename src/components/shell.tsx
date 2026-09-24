@@ -11,6 +11,7 @@ import {
   Gift,
   Handshake,
   LayoutDashboard,
+  Package,
   Search,
   Sparkles,
   Wallet,
@@ -22,6 +23,7 @@ const NAV = [
   { href: "/tim-kiem", label: "Tìm kiếm", icon: Search },
   { href: "/ky-nang", label: "Kỹ năng", icon: Sparkles },
   { href: "/yeu-cau", label: "Yêu cầu", icon: ClipboardList },
+  { href: "/tang-qua", label: "Tặng quà", icon: Package },
   { href: "/giao-dich", label: "Giao dịch", icon: Handshake },
   { href: "/doi-qua", label: "Đổi quà", icon: Gift },
 ];
@@ -102,6 +104,7 @@ export function AppShell({
 const PUBLIC_NAV = [
   { href: "/gioi-thieu", label: "Giới thiệu" },
   { href: "/nhom-ky-nang", label: "Nhóm kỹ năng" },
+  { href: "/tang-qua", label: "Tặng quà" },
   { href: "/doi-qua", label: "Đổi quà" },
   { href: "/lien-he", label: "Liên hệ" },
 ];
