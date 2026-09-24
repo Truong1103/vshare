@@ -18,39 +18,47 @@ export default async function RewardsPage() {
   let live = false;
   let mine: Redemption[] = [];
 
-  const rewardsRes = await supabase.from("rewards").select("slug, title, description, cost, stock").eq("is_active", true).order("cost");
-  if (!rewardsRes.error && rewardsRes.data?.length) {
-    live = true;
-    catalog = rewardsRes.data.map((r) => ({
-      slug: String(r.slug),
-      title: String(r.title),
-      description: String(r.description || ""),
-      cost: Number(r.cost),
-      stock: Number(r.stock),
-    }));
+  try {
+    const rewardsRes = await supabase.from("rewards").select("slug, title, description, cost, stock").eq("is_active", true).order("cost");
+    if (!rewardsRes.error && rewardsRes.data?.length) {
+      live = true;
+      catalog = rewardsRes.data.map((r) => ({
+        slug: String(r.slug),
+        title: String(r.title),
+        description: String(r.description || ""),
+        cost: Number(r.cost),
+        stock: Number(r.stock),
+      }));
+    }
+  } catch {
+    live = false;
   }
 
   if (live && user) {
-    const redRes = await supabase
-      .from("reward_redemptions")
-      .select("id, cost, status, created_at, reward_id")
-      .eq("user_id", user.id)
-      .order("created_at", { ascending: false })
-      .limit(20);
-    if (!redRes.error && redRes.data?.length) {
-      const ids = redRes.data.map((r) => r.reward_id).filter(Boolean);
-      const titles = new Map<string, string>();
-      if (ids.length) {
-        const titleRes = await supabase.from("rewards").select("id, title").in("id", ids);
-        (titleRes.data || []).forEach((row) => titles.set(row.id, row.title));
+    try {
+      const redRes = await supabase
+        .from("reward_redemptions")
+        .select("id, cost, status, created_at, reward_id")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false })
+        .limit(20);
+      if (!redRes.error && redRes.data?.length) {
+        const ids = redRes.data.map((r) => r.reward_id).filter(Boolean);
+        const titles = new Map<string, string>();
+        if (ids.length) {
+          const titleRes = await supabase.from("rewards").select("id, title").in("id", ids);
+          (titleRes.data || []).forEach((row) => titles.set(row.id, row.title));
+        }
+        mine = redRes.data.map((r) => ({
+          id: r.id,
+          cost: Number(r.cost),
+          status: String(r.status),
+          created_at: r.created_at,
+          title: titles.get(r.reward_id) || "Quà Time Credit",
+        }));
       }
-      mine = redRes.data.map((r) => ({
-        id: r.id,
-        cost: Number(r.cost),
-        status: String(r.status),
-        created_at: r.created_at,
-        title: titles.get(r.reward_id) || "Quà Time Credit",
-      }));
+    } catch {
+      mine = [];
     }
   }
 
@@ -93,7 +101,7 @@ export default async function RewardsPage() {
                   <ConfirmForm
                     label="Đổi quà"
                     confirm={`Dùng ${g.cost} Time Credit để đổi “${g.title}”? Số dư không hoàn lại.`}
-                    action={() => redeemReward(g.slug)}
+                    action={redeemReward.bind(null, g.slug)}
                   />
                 )}
               </div>

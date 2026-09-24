@@ -15,12 +15,20 @@ export default async function MainLayout({ children }: { children: React.ReactNo
       </div>
     );
   }
-  const [{ count }, { count: unreadChats }] = await Promise.all([
-    supabase.from("notifications").select("*", { count: "exact", head: true }).eq("user_id", user.id).is("read_at", null),
-    supabase.from("messages").select("id", { count: "exact", head: true }).neq("sender_id", user.id).is("read_at", null),
-  ]);
+  let unread = 0;
+  let unreadChats = 0;
+  try {
+    const [{ count }, { count: chatCount }] = await Promise.all([
+      supabase.from("notifications").select("*", { count: "exact", head: true }).eq("user_id", user.id).is("read_at", null),
+      supabase.from("messages").select("id", { count: "exact", head: true }).neq("sender_id", user.id).is("read_at", null),
+    ]);
+    unread = count || 0;
+    unreadChats = chatCount || 0;
+  } catch {
+    /* bảng chưa có hoặc RLS — vẫn vào app */
+  }
   return (
-    <AppShell profile={profile} unread={count || 0} unreadChats={unreadChats || 0}>
+    <AppShell profile={profile} unread={unread} unreadChats={unreadChats}>
       {children}
     </AppShell>
   );
