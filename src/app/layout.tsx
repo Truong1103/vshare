@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Plus_Jakarta_Sans } from "next/font/google";
 import { Toaster } from "sonner";
+import { BackToTop } from "@/components/back-to-top";
 import "./globals.css";
 
 const jakarta = Plus_Jakarta_Sans({
@@ -9,9 +10,9 @@ const jakarta = Plus_Jakarta_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "VShare — Cho đi thời gian, nhận lại sự hỗ trợ",
+  title: "VShare – Ngân hàng Thời gian",
   description:
-    "Nền tảng cộng đồng trao đổi thời gian và kỹ năng bằng Time Credit. Ai cũng có thể cho đi và ai cũng có thể nhận lại.",
+    "Ai cũng có thể cho đi và ai cũng được nhận lại. Nền tảng timebank phi tiền tệ, thí điểm tại Hà Nội và Nghệ An.",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -19,6 +20,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="vi" suppressHydrationWarning>
       <body className={`${jakarta.variable} font-sans antialiased`} suppressHydrationWarning>
         {children}
+        <BackToTop />
         <Toaster richColors position="top-right" />
       </body>
     </html>

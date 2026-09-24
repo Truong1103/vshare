@@ -11,7 +11,7 @@ import { GoogleAuthButton } from "@/components/google-auth-button";
 export default function LoginPage() {
   const [error, setError] = useState<string | null>(null);
   return (
-    <AuthShell title="Đăng nhập" subtitle="Tiếp tục trao đổi thời gian cùng cộng đồng.">
+    <AuthShell title="Đăng nhập" subtitle="Tiếp tục cho đi thời gian và nhận lại sự hỗ trợ.">
       <form
         className="grid gap-4"
         action={async (fd) => {

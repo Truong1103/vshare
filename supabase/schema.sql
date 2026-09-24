@@ -829,3 +829,5 @@ with check (bucket_id = 'avatars' and auth.uid()::text = (storage.foldername(nam
 drop policy if exists avatars_own_update on storage.objects;
 create policy avatars_own_update on storage.objects for update
 using (bucket_id = 'avatars' and auth.uid()::text = (storage.foldername(name))[1]);
+
+-- Đổi quà + liên hệ: chạy thêm supabase/rewards.sql trên dự án đã triển khai.

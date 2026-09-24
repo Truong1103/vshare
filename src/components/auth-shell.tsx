@@ -1,5 +1,7 @@
 import Link from "next/link";
-import { Logo, HeroDashboard } from "@/components/brand";
+import { Logo, FullBanner } from "@/components/brand";
+import { BRAND } from "@/lib/brand";
+import { FloatingBubbles } from "@/components/floating-bubbles";
 
 export function AuthShell({
   title,
@@ -11,24 +13,20 @@ export function AuthShell({
   children: React.ReactNode;
 }) {
   return (
-    <div className="grid min-h-screen md:grid-cols-2">
-      <div className="relative hidden overflow-hidden bg-navy p-10 text-white md:flex md:flex-col">
+    <div className="relative grid min-h-screen overflow-hidden md:grid-cols-2">
+      <FloatingBubbles />
+      <div className="relative z-10 hidden flex-col overflow-y-auto bg-navy p-10 text-white md:flex">
         <Logo light />
-        <div className="relative z-10 my-auto max-w-lg">
-          <p className="text-xs font-bold uppercase tracking-[0.18em] text-terracotta">Cộng đồng Time Credit</p>
-          <h2 className="mt-4 text-4xl font-extrabold leading-tight">
-            Tập trung kỹ năng. Làm chủ thời gian.
-          </h2>
+        <div className="my-auto max-w-lg">
+          <p className="text-xs font-bold uppercase tracking-[0.18em] text-terracotta">{BRAND.model}</p>
+          <h2 className="mt-4 text-4xl font-extrabold leading-tight">{BRAND.slogan}</h2>
           <p className="mt-4 text-white/70">
-            1 giờ hỗ trợ = 1 Time Credit. Cho đi hôm nay, nhận lại khi bạn cần.
+            1 giờ hỗ trợ = 1 Time Credit. Thời gian của mỗi người đều có giá trị ngang nhau — không dùng tiền mặt.
           </p>
-          <div className="mt-10">
-            <HeroDashboard />
-          </div>
+          <FullBanner src="/banner2.png" alt="VShare" className="mt-10 border-white/15" />
         </div>
-        <div className="absolute -bottom-20 -right-16 h-64 w-64 rounded-full bg-terracotta/20 blur-3xl" />
       </div>
-      <div className="grain grid place-items-center px-4 py-12">
+      <div className="relative z-10 grain grid place-items-center px-4 py-12">
         <div className="w-full max-w-md">
           <div className="mb-8 md:hidden">
             <Logo />

@@ -315,3 +315,39 @@ export async function adminResolveReport(id: string, status: string, note: strin
   revalidatePath("/admin/bao-cao");
   return { ok: true };
 }
+
+export async function redeemReward(slug: string) {
+  const ctx = await requireUser();
+  if (ctx.error) return { error: ctx.error };
+  const { error } = await ctx.supabase.rpc("redeem_reward", { p_slug: slug });
+  if (error) return { error: mapError(error.message) };
+  revalidatePath("/doi-qua");
+  revalidatePath("/vi");
+  revalidatePath("/bang-dieu-khien");
+  return { ok: true };
+}
+
+export async function submitContact(formData: FormData) {
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("submit_contact", {
+    p_name: String(formData.get("name") || ""),
+    p_email: String(formData.get("email") || ""),
+    p_body: String(formData.get("body") || ""),
+  });
+  if (error) return { error: mapError(error.message) };
+  return { ok: true };
+}
+
+export async function adminSetRedemption(id: string, status: string, note: string) {
+  const ctx = await requireUser();
+  if (ctx.error) return { error: ctx.error };
+  if (ctx.profile.role !== "admin") return { error: "Không có quyền quản trị." };
+  const { error } = await ctx.supabase.rpc("admin_set_redemption", {
+    p_id: id,
+    p_status: status,
+    p_note: note,
+  });
+  if (error) return { error: mapError(error.message) };
+  revalidatePath("/admin/doi-qua");
+  return { ok: true };
+}

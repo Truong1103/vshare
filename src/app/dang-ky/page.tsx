@@ -12,7 +12,7 @@ export default function RegisterPage() {
   const [error, setError] = useState<string | null>(null);
   const [ok, setOk] = useState<string | null>(null);
   return (
-    <AuthShell title="Tạo tài khoản" subtitle="Thành viên mới nhận 2 Time Credit chào mừng.">
+    <AuthShell title="Tạo tài khoản" subtitle="Đăng ký kỹ năng hoặc quỹ thời gian rảnh. Thành viên mới nhận 2 Time Credit.">
       <form
         className="grid gap-4"
         action={async (fd) => {

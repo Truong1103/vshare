@@ -4,7 +4,9 @@ import Link from "next/link";
 import {
   BarChart3,
   Flag,
+  Gift,
   Handshake,
+  Mail,
   Sparkles,
   Star,
   Users,
@@ -17,6 +19,8 @@ const LINKS = [
   { href: "/admin/ky-nang", label: "Kỹ năng", icon: Sparkles },
   { href: "/admin/yeu-cau", label: "Yêu cầu", icon: ClipboardList },
   { href: "/admin/giao-dich", label: "Giao dịch", icon: Handshake },
+  { href: "/admin/doi-qua", label: "Đổi quà", icon: Gift },
+  { href: "/admin/lien-he", label: "Liên hệ", icon: Mail },
   { href: "/admin/danh-gia", label: "Đánh giá", icon: Star },
   { href: "/admin/bao-cao", label: "Báo cáo", icon: Flag },
 ];

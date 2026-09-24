@@ -79,3 +79,30 @@ input, textarea, select { font: inherit; }
   text-transform: uppercase;
   color: var(--terracotta);
 }
+
+@keyframes bubble-float {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+  33% { transform: translate3d(18px, -22px, 0) scale(1.06); }
+  66% { transform: translate3d(-12px, -36px, 0) scale(0.96); }
+}
+
+@keyframes bubble-float-b {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+  50% { transform: translate3d(-20px, -40px, 0) scale(1.1); }
+}
+
+@keyframes bubble-float-c {
+  0%, 100% { transform: translate3d(0, 8px, 0) scale(0.95); }
+  50% { transform: translate3d(16px, -18px, 0) scale(1.05); }
+}
+
+.bubble {
+  position: absolute;
+  border-radius: 9999px;
+  animation-name: bubble-float;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+}
+
+.bubble-b { animation-name: bubble-float-b; }
+.bubble-c { animation-name: bubble-float-c; }

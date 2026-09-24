@@ -1,24 +1,4 @@
-export const POPULAR_SEARCHES = [
-  "Gia sư",
-  "Lập trình",
-  "Dịch thuật",
-  "Sửa máy tính",
-  "Chụp ảnh",
-  "Lắng nghe",
-  "Thiết kế",
-  "Sửa điện",
-] as const;
-
-export const AREAS = [
-  "Toàn quốc / Online",
-  "Hà Nội",
-  "TP. Hồ Chí Minh",
-  "Đà Nẵng",
-  "Hải Phòng",
-  "Cần Thơ",
-  "Huế",
-  "Khác",
-] as const;
+export { AREAS, POPULAR_SEARCHES } from "@/lib/brand";
 
 export const MODE_LABEL: Record<string, string> = {
   online: "Trực tuyến",

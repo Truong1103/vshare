@@ -50,6 +50,8 @@ export function mapError(message: string) {
     NOT_COMPLETED: "Chỉ đánh giá sau khi giao dịch hoàn thành.",
     INVALID_RATING: "Điểm đánh giá phải từ 1 đến 5 sao.",
     duplicate_key: "Bạn đã đánh giá giao dịch này rồi.",
+    REWARD_OUT_OF_STOCK: "Quà này tạm hết. Hãy chọn phần quà khác.",
+    INVALID_CONTACT: "Vui lòng điền đủ họ tên, email và nội dung liên hệ.",
   };
   for (const [k, v] of Object.entries(table)) {
     if (key.includes(k) || message.includes(k)) return v;

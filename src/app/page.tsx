@@ -1,52 +1,53 @@
 import Link from "next/link";
 import { PublicHeader, PublicFooter } from "@/components/shell";
 import { getSessionUser } from "@/lib/supabase/server";
-import { Badge, Card } from "@/components/ui";
+import { Card } from "@/components/ui";
 import { MODE_LABEL } from "@/lib/constants";
-import { formatCredit } from "@/lib/utils";
+import { formatCredit, one } from "@/lib/utils";
 import { hasSupabaseEnv } from "@/lib/env";
-import { FlowDiagram, HeroDashboard, IconBox } from "@/components/brand";
+import { FlowDiagram, CroppedBanner, IconBox } from "@/components/brand";
+import { FloatingBubbles } from "@/components/floating-bubbles";
+import { BRAND, SKILL_GROUPS, GIFT_CATALOG } from "@/lib/brand";
 import {
   ArrowRight,
-  Clock,
-  Handshake,
+  Gift,
   HeartHandshake,
-  MessagesSquare,
-  Search,
+  MapPin,
+  Scale,
   ShieldCheck,
   Sparkles,
   Users,
-  Wallet,
 } from "lucide-react";
 
-const FEATURES = [
-  { icon: Sparkles, title: "Đăng kỹ năng", body: "Chia sẻ điều bạn làm tốt: dạy học, sửa chữa, thiết kế, lắng nghe." },
-  { icon: Search, title: "Tìm & lọc", body: "Tìm người hỗ trợ hoặc nhu cầu theo danh mục, khu vực, online/offline." },
-  { icon: Handshake, title: "Kết nối hai bên", body: "Nhận hỗ trợ, thống nhất thời gian và nội dung công việc." },
-  { icon: MessagesSquare, title: "Chat nội bộ", body: "Trao đổi realtime ngay trên nền tảng, không cần ứng dụng khác." },
-  { icon: Wallet, title: "Time Credit minh bạch", body: "Cộng/trừ tự động khi cả hai xác nhận, có lịch sử đầy đủ." },
-  { icon: ShieldCheck, title: "Uy tín cộng đồng", body: "Đánh giá 1–5 sao sau giao dịch, hồ sơ công khai, báo cáo nội dung." },
-];
-
-const PROBLEMS = [
-  { title: "Rào cản tài chính", body: "Nhiều người cần hỗ trợ nhưng không phải lúc nào cũng chi trả bằng tiền." },
-  { title: "Kỹ năng bị lãng phí", body: "Thời gian rảnh, kinh nghiệm sống và nghề nghiệp chưa được kết nối." },
-  { title: "Cho đi một chiều", body: "Người nhận mãi là người nhận. VShare hướng tới trao đổi hai chiều." },
+const VALUES = [
+  {
+    icon: Scale,
+    title: "Bình đẳng thời gian",
+    body: "Một giờ của sinh viên, người trẻ hay người cao tuổi đều đổi thành 1 Time Credit. Không định giá bằng tiền.",
+  },
+  {
+    icon: HeartHandshake,
+    title: "Tương trợ hai chiều",
+    body: "Ai cũng có thể cho đi và ai cũng được nhận lại. Người nhận hôm nay có thể là người cho đi ngày mai.",
+  },
+  {
+    icon: Users,
+    title: "Kết nối tri thức cộng đồng",
+    body: "Gia sư, thiết kế, kỹ thuật, truyền thông, chăm sóc xã hội — hệ sinh thái kỹ năng minh bạch, tiện lợi.",
+  },
 ];
 
 const STEPS = [
-  { n: "01", title: "Tạo hồ sơ", body: "Đăng ký, thêm kỹ năng và khu vực hoạt động." },
-  { n: "02", title: "Cho đi hoặc đăng nhu cầu", body: "Đăng kỹ năng, hoặc tạo yêu cầu khi cần hỗ trợ." },
-  { n: "03", title: "Kết nối & chat", body: "Hai bên thống nhất thời gian, địa điểm, nội dung." },
-  { n: "04", title: "Xác nhận hoàn thành", body: "Cả hai bấm xác nhận. Time Credit được chuyển đúng một lần." },
-  { n: "05", title: "Đánh giá & tích lũy", body: "Xây uy tín, dùng điểm để nhận lại sự hỗ trợ." },
+  { n: "01", title: "Đăng ký & chia sẻ", body: "Tạo hồ sơ, đăng kỹ năng hoặc quỹ thời gian rảnh cho cộng đồng." },
+  { n: "02", title: "Tích lũy tín chỉ", body: "Mỗi giờ hỗ trợ người khác = 1 Time Credit vào tài khoản." },
+  { n: "03", title: "Đổi nhận trợ giúp", body: "Dùng tín chỉ để nhận hướng dẫn, hỗ trợ hoặc dịch vụ từ thành viên khác." },
+  { n: "04", title: "Lan tỏa nhân văn", body: "Đánh giá uy tín, đổi quà cộng đồng, kết nối trường học và CLB." },
 ];
 
 export default async function HomePage() {
   let user: { id: string } | null = null;
   let skills: any[] = [];
   let requests: any[] = [];
-  let categories: any[] = [];
 
   if (hasSupabaseEnv()) {
     const ctx = await getSessionUser();
@@ -57,49 +58,53 @@ export default async function HomePage() {
         .select("id, title, area, mode, categories(name), profiles(full_name)")
         .eq("status", "active")
         .order("created_at", { ascending: false })
-        .limit(6),
+        .limit(4),
       ctx.supabase
         .from("help_requests")
         .select("id, title, time_credit, area, mode, categories(name)")
         .eq("status", "open")
         .order("created_at", { ascending: false })
-        .limit(6),
-      ctx.supabase.from("categories").select("*").order("sort_order"),
+        .limit(4),
     ]);
     skills = results[0].data || [];
     requests = results[1].data || [];
-    categories = results[2].data || [];
   }
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="relative min-h-screen overflow-hidden bg-white">
+      <FloatingBubbles />
+      <div className="relative z-10">
       <PublicHeader authed={!!user} />
 
-      <section className="grain grid-bg relative overflow-hidden">
-        <div className="mx-auto grid max-w-6xl items-center gap-12 px-4 py-14 md:grid-cols-2 md:py-20">
+      <section className="grain relative overflow-hidden">
+        <div className="mx-auto grid max-w-6xl items-center gap-10 px-4 py-12 md:grid-cols-2 md:py-16">
           <div>
-            <p className="kicker">Nền tảng cộng đồng · Time Credit</p>
-            <h1 className="mt-4 text-4xl font-extrabold leading-[1.12] md:text-6xl">
-              Tập trung kỹ năng cộng đồng,{" "}
-              <span className="text-terracotta">làm chủ thời gian</span> của bạn
+            <p className="kicker">{BRAND.model}</p>
+            <h1 className="mt-4 text-4xl font-extrabold leading-[1.12] md:text-5xl">
+              {BRAND.fullName}
             </h1>
-            <p className="mt-5 max-w-xl text-lg leading-8 text-muted">
-              VShare kết nối người có kỹ năng với người đang cần hỗ trợ. 1 giờ hỗ trợ = 1 Time Credit — không dùng tiền mặt, không nạp rút.
+            <p className="mt-4 text-xl font-semibold text-terracotta">{BRAND.slogan}</p>
+            <p className="mt-4 max-w-xl text-base leading-7 text-muted">
+              Nền tảng trao đổi công bằng, phi tiền tệ. Bạn đóng góp thời gian và kỹ năng để tích lũy Time Credit, rồi dùng tín chỉ đó nhận lại sự trợ giúp từ cộng đồng. Thí điểm tại <strong>Hà Nội</strong> và <strong>Nghệ An</strong>.
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
               <Link href="/dang-ky" className="inline-flex items-center gap-2 rounded-xl bg-terracotta px-6 py-3 font-semibold text-white shadow-lg shadow-terracotta/25">
-                Dùng thử ngay <ArrowRight className="h-4 w-4" />
+                Tham gia ngay <ArrowRight className="h-4 w-4" />
               </Link>
-              <Link href="/tim-kiem" className="inline-flex items-center rounded-xl border border-line bg-white px-6 py-3 font-semibold">
-                Xem tính năng
+              <Link href="/gioi-thieu" className="inline-flex items-center rounded-xl border border-line bg-white px-6 py-3 font-semibold">
+                Giới thiệu dự án
               </Link>
             </div>
-            <div className="mt-8 flex flex-wrap gap-4 text-sm font-medium text-ink/70">
-              <span className="inline-flex items-center gap-2"><ShieldCheck className="h-4 w-4 text-terracotta" /> Điểm nội bộ, minh bạch</span>
-              <span className="inline-flex items-center gap-2"><Users className="h-4 w-4 text-sage" /> Ai cũng cho đi & nhận lại</span>
+            <div className="mt-6 flex flex-wrap gap-4 text-sm font-medium text-ink/70">
+              <span className="inline-flex items-center gap-2">
+                <ShieldCheck className="h-4 w-4 text-terracotta" /> 1 giờ = 1 Time Credit
+              </span>
+              <span className="inline-flex items-center gap-2">
+                <MapPin className="h-4 w-4 text-sage" /> Hà Nội · Nghệ An
+              </span>
             </div>
           </div>
-          <HeroDashboard />
+          <CroppedBanner src="/banner1.png" alt="Cộng đồng VShare chia sẻ kỹ năng" priority />
         </div>
       </section>
 
@@ -107,9 +112,9 @@ export default async function HomePage() {
         <div className="mx-auto grid max-w-6xl gap-6 px-4 md:grid-cols-4">
           {[
             { v: "1h = 1 TC", l: "Quy tắc cốt lõi" },
-            { v: "2 TC", l: "Thưởng chào mừng" },
+            { v: "Phi tiền tệ", l: "Không nạp, không rút" },
+            { v: "2 địa phương", l: "Thí điểm HN & Nghệ An" },
             { v: "2 chiều", l: "Cho đi và nhận lại" },
-            { v: "0 đồng", l: "Không thanh toán tiền" },
           ].map((s) => (
             <div key={s.l} className="text-center">
               <p className="text-3xl font-extrabold text-ink">{s.v}</p>
@@ -119,36 +124,45 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <section id="giai-phap" className="mx-auto max-w-6xl px-4 py-20">
-        <p className="kicker">Tổng quan giải pháp</p>
-        <h2 className="mt-3 max-w-2xl text-3xl font-extrabold md:text-4xl">Toàn cảnh VShare: từ kỹ năng rời rạc đến sự hỗ trợ đúng lúc</h2>
-        <p className="mt-3 max-w-2xl text-muted">Nhanh hơn, công bằng hơn, không cần tiền mặt.</p>
-        <div className="mt-10">
-          <FlowDiagram />
+      <section className="mx-auto max-w-6xl px-4 py-16">
+        <p className="kicker">Giá trị nhân văn</p>
+        <h2 className="mt-3 max-w-3xl text-3xl font-extrabold md:text-4xl">Thời gian của bạn có giá trị — dù bạn là ai</h2>
+        <p className="mt-3 max-w-2xl text-muted">
+          Nhiều người có kỹ năng và thời gian rảnh nhưng thiếu nơi kết nối; nhiều người cần trợ giúp nhưng vướng rào cản chi phí. VShare san đều giá trị đó.
+        </p>
+        <div className="mt-10 grid gap-5 md:grid-cols-3">
+          {VALUES.map((p) => (
+            <Card key={p.title} className="p-7">
+              <IconBox>
+                <p.icon className="h-6 w-6" />
+              </IconBox>
+              <h3 className="mt-4 text-xl font-bold">{p.title}</h3>
+              <p className="mt-2 text-sm leading-6 text-muted">{p.body}</p>
+            </Card>
+          ))}
         </div>
       </section>
 
-      <section className="bg-paper py-20">
+      <section className="bg-paper py-16">
         <div className="mx-auto max-w-6xl px-4">
-          <p className="kicker">Giá trị cốt lõi</p>
-          <h2 className="mt-3 text-3xl font-extrabold md:text-4xl">Vì sao cộng đồng chọn VShare</h2>
-          <div className="mt-10 grid gap-5 md:grid-cols-3">
-            {PROBLEMS.map((p) => (
-              <Card key={p.title} className="p-7">
-                <IconBox><HeartHandshake className="h-6 w-6" /></IconBox>
-                <h3 className="mt-4 text-xl font-bold">{p.title}</h3>
-                <p className="mt-2 text-sm leading-6 text-muted">{p.body}</p>
-              </Card>
-            ))}
+          <p className="kicker">Câu chuyện dự án</p>
+          <h2 className="mt-3 text-3xl font-extrabold">Video giới thiệu VShare</h2>
+          <p className="mt-2 max-w-2xl text-muted">Xem cách Ngân hàng Thời gian vận hành: cho đi kỹ năng, tích lũy tín chỉ, nhận lại sự hỗ trợ.</p>
+          <div className="mt-8 overflow-hidden rounded-[28px] border border-line bg-black shadow-lg">
+            <video className="aspect-video w-full" controls poster="/banner1.png" preload="metadata">
+              <source src="/video_gioithieuduan.mp4" type="video/mp4" />
+            </video>
           </div>
         </div>
       </section>
 
-      <section id="cach-tham-gia" className="mx-auto max-w-6xl px-4 py-20">
-        <p className="kicker">Quy trình</p>
-        <h2 className="mt-3 text-3xl font-extrabold md:text-4xl">VShare hoạt động như thế nào?</h2>
-        <p className="mt-3 text-muted">Từ hồ sơ đến Time Credit, chỉ trong năm bước.</p>
-        <div className="mt-10 grid gap-4 md:grid-cols-5">
+      <section className="mx-auto max-w-6xl px-4 py-16">
+        <p className="kicker">Cơ chế vận hành</p>
+        <h2 className="mt-3 text-3xl font-extrabold">Từ cho đi đến nhận lại</h2>
+        <div className="mt-8">
+          <FlowDiagram />
+        </div>
+        <div className="mt-8 grid gap-4 md:grid-cols-4">
           {STEPS.map((s) => (
             <div key={s.n} className="rounded-2xl border border-line bg-white p-5">
               <p className="text-sm font-extrabold text-terracotta">{s.n}</p>
@@ -159,78 +173,107 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <section id="tinh-nang" className="bg-navy py-20 text-white">
+      <section className="bg-navy py-16 text-white">
         <div className="mx-auto max-w-6xl px-4">
-          <p className="text-xs font-bold uppercase tracking-[0.16em] text-terracotta">Tính năng</p>
-          <h2 className="mt-3 text-3xl font-extrabold md:text-4xl">Tính năng nổi bật</h2>
-          <p className="mt-3 max-w-2xl text-white/65">Đầy đủ công cụ để cho đi kỹ năng, nhận hỗ trợ và quản lý Time Credit.</p>
-          <div className="mt-10 grid gap-4 md:grid-cols-4">
-            {FEATURES.map((f) => (
-              <div key={f.title} className="rounded-2xl border border-white/10 bg-white/5 p-5">
-                <f.icon className="h-6 w-6 text-terracotta" />
-                <h3 className="mt-4 font-bold">{f.title}</h3>
-                <p className="mt-2 text-sm leading-6 text-white/65">{f.body}</p>
-              </div>
+          <p className="text-xs font-bold uppercase tracking-[0.16em] text-terracotta">Nhóm kỹ năng</p>
+          <h2 className="mt-3 text-3xl font-extrabold">Đa dạng kỹ năng, online và trực tiếp</h2>
+          <p className="mt-3 max-w-2xl text-white/65">Mỗi nhóm đều có hình thức từ xa và gặp mặt tại Hà Nội / Nghệ An.</p>
+          <div className="mt-8 grid gap-4 md:grid-cols-3">
+            {SKILL_GROUPS.map((g) => (
+              <Link key={g.id} href={`/tim-kiem?q=${encodeURIComponent(g.query)}&tab=all`} className="rounded-2xl border border-white/10 bg-white/5 p-5 hover:bg-white/10">
+                <h3 className="font-bold">{g.name}</h3>
+                <p className="mt-2 text-sm text-white/65">{g.blurb}</p>
+                <p className="mt-3 text-xs text-terracotta">Online · {g.online[0]}</p>
+                <p className="text-xs text-white/55">Trực tiếp · {g.offline[0]}</p>
+              </Link>
             ))}
-            <div className="rounded-2xl border border-white/10 bg-gradient-to-br from-terracotta/30 to-sage/20 p-5 md:col-span-2">
-              <Clock className="h-6 w-6" />
-              <h3 className="mt-4 text-xl font-bold">1 giờ hỗ trợ = 1 Time Credit</h3>
-              <p className="mt-2 text-sm text-white/75">30 phút = 0,5 TC. Hệ thống khóa số dư âm và không cho hoàn thành trùng một giao dịch.</p>
-            </div>
           </div>
+          <Link href="/nhom-ky-nang" className="mt-8 inline-flex items-center gap-2 font-semibold text-terracotta">
+            Xem toàn bộ nhóm kỹ năng <ArrowRight className="h-4 w-4" />
+          </Link>
         </div>
       </section>
 
-      <section className="mx-auto max-w-6xl px-4 py-20">
-        <p className="kicker">Bạn có thể cho đi gì?</p>
-        <h2 className="mt-3 text-3xl font-extrabold">Các kỹ năng phổ biến</h2>
-        <div className="mt-6 flex flex-wrap gap-2">
-          {(categories.length ? categories : [{ id: "x", name: "Dạy học" }, { id: "y", name: "Sửa máy tính" }, { id: "z", name: "Lắng nghe" }]).map((c) => (
-            <Badge key={c.id}>{c.name}</Badge>
-          ))}
-        </div>
-        <div className="mt-10 grid gap-8 md:grid-cols-2">
+      <section className="mx-auto max-w-6xl px-4 py-16">
+        <div className="grid items-center gap-10 md:grid-cols-2">
           <div>
-            <h3 className="text-xl font-bold">Kỹ năng gần đây</h3>
-            <div className="mt-4 grid gap-3">
-              {(skills || []).map((s) => (
-                <Card key={s.id}>
-                  <p className="font-semibold">{s.title}</p>
-                  <p className="mt-1 text-sm text-muted">
-                    {s.profiles?.full_name} · {s.categories?.name} · {MODE_LABEL[s.mode]}
-                  </p>
-                </Card>
+            <p className="kicker">Đổi quà Time Credit</p>
+            <h2 className="mt-3 text-3xl font-extrabold">Tín chỉ không phải tiền — vẫn có thể tri ân</h2>
+            <p className="mt-3 text-muted">
+              Dùng Time Credit đổi sổ tay, vé workshop, phiên lắng nghe hoặc góp cây xanh. Quà cộng đồng, không mua bán.
+            </p>
+            <div className="mt-6 grid gap-3">
+              {GIFT_CATALOG.slice(0, 3).map((g) => (
+                <div key={g.slug} className="flex items-center justify-between rounded-2xl border border-line bg-white/80 px-4 py-3">
+                  <div>
+                    <p className="font-semibold">{g.title}</p>
+                    <p className="text-xs text-muted">{g.cost} TC</p>
+                  </div>
+                  <Gift className="h-4 w-4 text-terracotta" />
+                </div>
               ))}
-              {!skills?.length ? <p className="text-sm text-muted">Chưa có tin. Hãy là người đăng đầu tiên.</p> : null}
             </div>
+            <Link href="/doi-qua" className="mt-6 inline-flex rounded-xl bg-terracotta px-5 py-2.5 text-sm font-semibold text-white">
+              Xem danh mục đổi quà
+            </Link>
           </div>
-          <div>
-            <h3 className="text-xl font-bold">Yêu cầu hỗ trợ gần đây</h3>
-            <div className="mt-4 grid gap-3">
-              {(requests || []).map((r) => (
-                <Card key={r.id}>
-                  <p className="font-semibold">{r.title}</p>
-                  <p className="mt-1 text-sm text-muted">
-                    {formatCredit(r.time_credit)} TC · {r.area} · {MODE_LABEL[r.mode]}
-                  </p>
-                </Card>
-              ))}
-              {!requests?.length ? <p className="text-sm text-muted">Chưa có yêu cầu hỗ trợ.</p> : null}
-            </div>
-          </div>
+          <CroppedBanner src="/banner2.png" alt="Kết nối những con người tử tế" />
         </div>
       </section>
 
       <section className="bg-paper py-16">
-        <div className="mx-auto max-w-3xl px-4 text-center">
-          <h2 className="text-3xl font-extrabold md:text-4xl">Khám phá VShare ngay hôm nay</h2>
-          <p className="mt-3 text-muted">Đăng ký, nhận 2 Time Credit chào mừng, và bắt đầu cho đi.</p>
-          <Link href="/dang-ky" className="mt-6 inline-flex rounded-xl bg-terracotta px-6 py-3 font-semibold text-white">
-            Bắt đầu miễn phí
-          </Link>
+        <div className="mx-auto max-w-6xl px-4">
+          <h2 className="text-3xl font-extrabold">Đang diễn ra trong cộng đồng</h2>
+          <div className="mt-8 grid gap-8 md:grid-cols-2">
+            <div>
+              <h3 className="text-lg font-bold">Kỹ năng đang cho đi</h3>
+              <div className="mt-4 grid gap-3">
+                {skills.map((s) => (
+                  <Card key={s.id}>
+                    <p className="font-semibold">{s.title}</p>
+                    <p className="mt-1 text-sm text-muted">
+                      {one(s.profiles)?.full_name} · {one(s.categories)?.name} · {MODE_LABEL[s.mode]}
+                    </p>
+                  </Card>
+                ))}
+                {!skills.length ? <p className="text-sm text-muted">Chưa có tin. Hãy là người cho đi đầu tiên.</p> : null}
+              </div>
+            </div>
+            <div>
+              <h3 className="text-lg font-bold">Người đang cần hỗ trợ</h3>
+              <div className="mt-4 grid gap-3">
+                {requests.map((r) => (
+                  <Card key={r.id}>
+                    <p className="font-semibold">{r.title}</p>
+                    <p className="mt-1 text-sm text-muted">
+                      {formatCredit(r.time_credit)} TC · {r.area} · {MODE_LABEL[r.mode]}
+                    </p>
+                  </Card>
+                ))}
+                {!requests.length ? <p className="text-sm text-muted">Chưa có yêu cầu hỗ trợ.</p> : null}
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="relative overflow-hidden bg-paper py-16">
+        <div className="relative mx-auto max-w-3xl px-4 text-center">
+          <Sparkles className="mx-auto h-8 w-8 text-terracotta" />
+          <h2 className="mt-4 text-3xl font-extrabold md:text-4xl">Bắt đầu cho đi một giờ hôm nay</h2>
+          <p className="mt-3 text-muted">Nhận 2 Time Credit chào mừng. Thí điểm Hà Nội và Nghệ An.</p>
+          <div className="mt-6 flex flex-wrap justify-center gap-3">
+            <Link href="/dang-ky" className="inline-flex rounded-xl bg-terracotta px-6 py-3 font-semibold text-white">
+              Đăng ký thành viên
+            </Link>
+            <Link href="/lien-he" className="inline-flex rounded-xl border border-line bg-white px-6 py-3 font-semibold">
+              Liên hệ ban điều hành
+            </Link>
+          </div>
         </div>
       </section>
       <PublicFooter />
+      </div>
     </div>
   );
 }

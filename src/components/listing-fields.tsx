@@ -31,7 +31,7 @@ export function ListingFields({
             ))}
           </select>
         </Field>
-        <Field label="Khu vực">
+        <Field label="Khu vực (thí điểm Hà Nội, Nghệ An hoặc trực tuyến)">
           <select name="area" className={inputClass()} defaultValue={defaults?.area ?? ""}>
             <option value="">Chọn khu vực</option>
             {AREAS.map((a) => (

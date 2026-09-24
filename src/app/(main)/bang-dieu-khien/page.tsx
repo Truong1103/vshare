@@ -45,8 +45,8 @@ export default async function DashboardPage() {
         <LinkButton href="/vi" variant="secondary">
           Ví Time Credit
         </LinkButton>
-        <LinkButton href="/chat" variant="secondary">
-          Chat
+        <LinkButton href="/doi-qua" variant="secondary">
+          Đổi quà
         </LinkButton>
       </div>
       <div className="mt-8 grid gap-6 md:grid-cols-2">

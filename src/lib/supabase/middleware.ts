@@ -13,6 +13,7 @@ const PROTECTED = [
   "/thong-bao",
   "/cai-dat",
   "/admin",
+  "/doi-qua",
 ];
 
 export async function updateSession(request: NextRequest) {

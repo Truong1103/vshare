@@ -22,7 +22,11 @@ export default async function WalletPage() {
         <StatCard label="Đã sử dụng" value={formatCredit(spent)} hint="Cho các yêu cầu hỗ trợ" icon={<ArrowDownRight className="h-4 w-4 text-terracotta" />} />
       </div>
       <p className="mt-4 rounded-xl border border-line bg-white px-4 py-3 text-sm text-muted">
-        Time Credit không phải tiền mặt và không thể rút. Điểm đến từ hỗ trợ cộng đồng hoặc thưởng hệ thống.
+        Time Credit không phải tiền mặt và không thể rút. Dùng để nhận hỗ trợ hoặc{" "}
+        <a href="/doi-qua" className="font-semibold text-terracotta">
+          đổi quà cộng đồng
+        </a>
+        .
       </p>
       <div className="mt-6 space-y-3">
         {(rows || []).map((row) => (
