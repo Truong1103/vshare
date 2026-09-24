@@ -3,7 +3,7 @@ import { Avatar, Card, LinkButton, PageHeader, Stars } from "@/components/ui";
 import { updateProfile, uploadAvatar } from "@/lib/actions/auth";
 import { ClientForm, SubmitButton } from "@/components/forms";
 import { Field, inputClass } from "@/components/ui";
-import { AREAS } from "@/lib/constants";
+import { AreaPicker } from "@/components/area-picker";
 import Link from "next/link";
 import { formatCredit, one } from "@/lib/utils";
 
@@ -48,15 +48,8 @@ export default async function MyProfilePage() {
                 <Field label="Giới thiệu">
                   <textarea name="bio" rows={4} defaultValue={profile!.bio || ""} className={inputClass()} />
                 </Field>
-                <Field label="Khu vực">
-                  <select name="area" defaultValue={profile!.area || ""} className={inputClass()}>
-                    <option value="">Chọn khu vực</option>
-                    {AREAS.map((a) => (
-                      <option key={a} value={a}>
-                        {a}
-                      </option>
-                    ))}
-                  </select>
+                <Field label="Khu vực thí điểm">
+                  <AreaPicker defaultValue={profile!.area || ""} />
                 </Field>
                 <Field label="Kỹ năng (phân tách bằng dấu phẩy)">
                   <input name="skills" defaultValue={(Array.isArray(profile!.skills) ? profile!.skills : []).join(", ")} className={inputClass()} />

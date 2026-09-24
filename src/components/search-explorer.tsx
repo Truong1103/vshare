@@ -4,8 +4,9 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Clock, Search, Sparkles, X } from "lucide-react";
-import { AREAS, POPULAR_SEARCHES } from "@/lib/constants";
+import { POPULAR_SEARCHES } from "@/lib/constants";
 import { cn } from "@/lib/utils";
+import { AreaPicker } from "@/components/area-picker";
 
 type Category = { id: string; name: string };
 type Suggestion = { kind: "category" | "skill" | "request" | "person"; id: string; label: string; href: string };
@@ -237,7 +238,7 @@ export function SearchExplorer({
           ) : null}
         </div>
 
-        <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
           <select
             name="category"
             defaultValue={category}
@@ -248,19 +249,6 @@ export function SearchExplorer({
             {categories.map((c) => (
               <option key={c.id} value={c.id}>
                 {c.name}
-              </option>
-            ))}
-          </select>
-          <select
-            name="area"
-            defaultValue={area}
-            onChange={(e) => e.currentTarget.form?.requestSubmit()}
-            className="min-w-0 w-full rounded-xl border border-line bg-white px-3 py-2.5 text-sm"
-          >
-            <option value="">Mọi khu vực</option>
-            {AREAS.map((a) => (
-              <option key={a} value={a}>
-                {a}
               </option>
             ))}
           </select>
@@ -276,6 +264,7 @@ export function SearchExplorer({
             <option value="both">Cả hai</option>
           </select>
         </div>
+        <AreaPicker defaultValue={area} autoSubmit />
 
         <button className="w-full rounded-xl bg-terracotta px-4 py-2.5 text-sm font-semibold text-white">Tìm kiếm</button>
       </form>

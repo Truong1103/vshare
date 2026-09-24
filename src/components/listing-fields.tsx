@@ -1,6 +1,6 @@
 import { Field, inputClass, Button } from "@/components/ui";
 import { SubmitButton } from "@/components/forms";
-import { AREAS } from "@/lib/constants";
+import { AreaPicker } from "@/components/area-picker";
 import type { Category } from "@/types";
 
 export function ListingFields({
@@ -31,16 +31,6 @@ export function ListingFields({
             ))}
           </select>
         </Field>
-        <Field label="Khu vực (thí điểm Hà Nội, Nghệ An hoặc trực tuyến)">
-          <select name="area" className={inputClass()} defaultValue={defaults?.area ?? ""}>
-            <option value="">Chọn khu vực</option>
-            {AREAS.map((a) => (
-              <option key={a} value={a}>
-                {a}
-              </option>
-            ))}
-          </select>
-        </Field>
         <Field label="Hình thức hỗ trợ">
           <select name="mode" className={inputClass()} defaultValue={defaults?.mode ?? "both"}>
             <option value="online">Trực tuyến</option>
@@ -48,6 +38,11 @@ export function ListingFields({
             <option value="both">Cả hai</option>
           </select>
         </Field>
+      </div>
+      <Field label="Khu vực thí điểm (tỉnh · quận/huyện · phường/xã)">
+        <AreaPicker defaultValue={defaults?.area ? String(defaults.area) : ""} />
+      </Field>
+      <div className="grid gap-4 md:grid-cols-2">
         {kind === "skill" ? (
           <Field label="Thời gian có thể hỗ trợ">
             <input name="availability" className={inputClass()} placeholder="Tối các ngày trong tuần" defaultValue={defaults?.availability ?? ""} />

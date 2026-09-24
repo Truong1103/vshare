@@ -8,7 +8,7 @@ import Link from "next/link";
 function applyListingFilters(query: any, q: string, category: string, area: string, mode: string) {
   if (q) query = query.or(`title.ilike.%${q}%,description.ilike.%${q}%`);
   if (category) query = query.eq("category_id", category);
-  if (area) query = query.eq("area", area);
+  if (area) query = query.ilike("area", `${area.replace(/[%_]/g, "")}%`);
   if (mode) query = query.eq("mode", mode);
   return query;
 }
@@ -42,8 +42,9 @@ export default async function SearchPage({
     peopleListQuery = peopleListQuery.or(`full_name.ilike.%${q}%,bio.ilike.%${q}%`);
   }
   if (area) {
-    peopleCountQuery = peopleCountQuery.eq("area", area);
-    peopleListQuery = peopleListQuery.eq("area", area);
+    const prefix = `${area.replace(/[%_]/g, "")}%`;
+    peopleCountQuery = peopleCountQuery.ilike("area", prefix);
+    peopleListQuery = peopleListQuery.ilike("area", prefix);
   }
 
   const preview = tab === "all" ? 8 : 24;
