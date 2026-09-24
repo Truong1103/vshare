@@ -2,11 +2,10 @@ import Link from "next/link";
 import { PublicHeader, PublicFooter } from "@/components/shell";
 import { getSessionUser } from "@/lib/supabase/server";
 import { Card } from "@/components/ui";
-import { MODE_LABEL } from "@/lib/constants";
-import { formatCredit, one } from "@/lib/utils";
 import { hasSupabaseEnv } from "@/lib/env";
 import { FlowDiagram, CroppedBanner, IconBox } from "@/components/brand";
 import { FloatingBubbles } from "@/components/floating-bubbles";
+import { CommunityFeed } from "@/components/community-feed";
 import { BRAND, SKILL_GROUPS, GIFT_CATALOG } from "@/lib/brand";
 import {
   ArrowRight,
@@ -48,6 +47,8 @@ export default async function HomePage() {
   let user: { id: string } | null = null;
   let skills: any[] = [];
   let requests: any[] = [];
+  let skillCount = 0;
+  let requestCount = 0;
 
   if (hasSupabaseEnv()) {
     const ctx = await getSessionUser();
@@ -55,19 +56,23 @@ export default async function HomePage() {
     const results = await Promise.all([
       ctx.supabase
         .from("skill_posts")
-        .select("id, title, area, mode, categories(name), profiles(full_name)")
+        .select("id, title, description, area, mode, created_at, categories(name), profiles(full_name, avatar_url, rating_avg)")
         .eq("status", "active")
         .order("created_at", { ascending: false })
-        .limit(4),
+        .limit(5),
       ctx.supabase
         .from("help_requests")
-        .select("id, title, time_credit, area, mode, categories(name)")
+        .select("id, title, description, time_credit, area, mode, created_at, categories(name), profiles(full_name, avatar_url)")
         .eq("status", "open")
         .order("created_at", { ascending: false })
-        .limit(4),
+        .limit(5),
+      ctx.supabase.from("skill_posts").select("id", { count: "exact", head: true }).eq("status", "active"),
+      ctx.supabase.from("help_requests").select("id", { count: "exact", head: true }).eq("status", "open"),
     ]);
     skills = results[0].data || [];
     requests = results[1].data || [];
+    skillCount = results[2].count || skills.length;
+    requestCount = results[3].count || requests.length;
   }
 
   return (
@@ -221,41 +226,7 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <section className="bg-paper py-16">
-        <div className="mx-auto max-w-6xl px-4">
-          <h2 className="text-3xl font-extrabold">Đang diễn ra trong cộng đồng</h2>
-          <div className="mt-8 grid gap-8 md:grid-cols-2">
-            <div>
-              <h3 className="text-lg font-bold">Kỹ năng đang cho đi</h3>
-              <div className="mt-4 grid gap-3">
-                {skills.map((s) => (
-                  <Card key={s.id}>
-                    <p className="font-semibold">{s.title}</p>
-                    <p className="mt-1 text-sm text-muted">
-                      {one(s.profiles)?.full_name} · {one(s.categories)?.name} · {MODE_LABEL[s.mode]}
-                    </p>
-                  </Card>
-                ))}
-                {!skills.length ? <p className="text-sm text-muted">Chưa có tin. Hãy là người cho đi đầu tiên.</p> : null}
-              </div>
-            </div>
-            <div>
-              <h3 className="text-lg font-bold">Người đang cần hỗ trợ</h3>
-              <div className="mt-4 grid gap-3">
-                {requests.map((r) => (
-                  <Card key={r.id}>
-                    <p className="font-semibold">{r.title}</p>
-                    <p className="mt-1 text-sm text-muted">
-                      {formatCredit(r.time_credit)} TC · {r.area} · {MODE_LABEL[r.mode]}
-                    </p>
-                  </Card>
-                ))}
-                {!requests.length ? <p className="text-sm text-muted">Chưa có yêu cầu hỗ trợ.</p> : null}
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
+      <CommunityFeed skills={skills} requests={requests} skillCount={skillCount} requestCount={requestCount} />
 
       <section className="relative overflow-hidden bg-paper py-16">
         <div className="relative mx-auto max-w-3xl px-4 text-center">
