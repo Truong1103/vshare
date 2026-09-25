@@ -28,7 +28,7 @@ export function CroppedBanner({
   priority?: boolean;
 }) {
   return (
-    <div className="relative aspect-[16/10] overflow-hidden rounded-[28px] border border-line shadow-xl">
+    <div className="relative aspect-[18/12] overflow-hidden rounded-[28px] border border-line shadow-xl">
       <Image
         src={src}
         alt={alt}
